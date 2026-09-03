@@ -54,12 +54,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.R
 import com.example.data.model.Drama
 import com.example.data.repository.NovelaRepository
 import com.example.ui.components.PullToRefreshLayout
@@ -242,7 +245,13 @@ fun HomeScreen(
                         ) {
                             Box(modifier = Modifier.fillMaxWidth().height(230.dp)) {
                                 AsyncImage(
-                                    model = featuredDrama.bannerUrl.ifEmpty { featuredDrama.coverUrl },
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(featuredDrama.bannerUrl.ifEmpty { featuredDrama.coverUrl })
+                                        .crossfade(true)
+                                        .placeholder(R.drawable.img_dono_morro_cover)
+                                        .error(R.drawable.img_dono_morro_cover)
+                                        .fallback(R.drawable.img_dono_morro_cover)
+                                        .build(),
                                     contentDescription = featuredDrama.title,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize()
@@ -480,7 +489,13 @@ fun TrendingDramaCard(
                     .height(200.dp)
             ) {
                 AsyncImage(
-                    model = drama.coverUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(drama.coverUrl)
+                        .crossfade(true)
+                        .placeholder(R.drawable.img_dono_morro_cover)
+                        .error(R.drawable.img_dono_morro_cover)
+                        .fallback(R.drawable.img_dono_morro_cover)
+                        .build(),
                     contentDescription = drama.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -557,7 +572,13 @@ fun DramaListItem(
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 AsyncImage(
-                    model = drama.coverUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(drama.coverUrl)
+                        .crossfade(true)
+                        .placeholder(R.drawable.img_dono_morro_cover)
+                        .error(R.drawable.img_dono_morro_cover)
+                        .fallback(R.drawable.img_dono_morro_cover)
+                        .build(),
                     contentDescription = drama.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

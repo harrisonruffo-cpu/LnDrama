@@ -62,6 +62,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.R
 import com.example.data.model.Episode
 import com.example.data.repository.NovelaRepository
 import com.example.data.util.DonoDoMorroManager
@@ -372,9 +374,15 @@ fun NovelaScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.Black)
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // Image from Google Drive link provided by user
+                        // Image from Google Drive link provided by user (with high-res local asset fallback)
                         AsyncImage(
-                            model = DonoDoMorroManager.OFFICIAL_SERIES_IMAGE_URL,
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(DonoDoMorroManager.OFFICIAL_SERIES_IMAGE_URL)
+                                .crossfade(true)
+                                .placeholder(R.drawable.img_dono_morro_cover)
+                                .error(R.drawable.img_dono_morro_cover)
+                                .fallback(R.drawable.img_dono_morro_cover)
+                                .build(),
                             contentDescription = "Imagem Principal da Série Brasileira Ação Drama Favela",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
