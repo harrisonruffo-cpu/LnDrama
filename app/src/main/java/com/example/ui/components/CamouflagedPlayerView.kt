@@ -196,7 +196,7 @@ fun CamouflagedPlayerView(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Carregando reprodução camuflada...",
+                        text = "Carregando episódio...",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = GoldAccent,
                             fontSize = 11.sp

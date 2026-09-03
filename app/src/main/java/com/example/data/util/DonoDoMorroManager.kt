@@ -7,10 +7,12 @@ import com.example.data.model.Episode
 object DonoDoMorroManager {
     private const val PREFS_NAME = "dono_do_morro_prefs"
     private const val KEY_CUSTOM_EPISODE_1 = "custom_episode_1_url"
+    private const val KEY_CUSTOM_EPISODE_2 = "custom_episode_2_url"
     private const val KEY_FOLLOWERS_BASE = "followers_base_count"
 
-    // Link padrão oficial do Episódio 1 com suporte a YouTube camuflado
+    // Links padrão oficiais dos episódios
     const val DEFAULT_EPISODE_1_URL = "https://youtu.be/u0WXCHgZxaY?is=bvomW3X72476KQDG"
+    const val DEFAULT_EPISODE_2_URL = "https://youtu.be/1KsKnrc7ojM?is=XjVN827OTKU0Yoj7"
 
     // Perfil Oficial do ADM e Desenvolvedor
     const val OFFICIAL_ADM_NAME = "Harrison Ruffo"
@@ -44,6 +46,20 @@ object DonoDoMorroManager {
         getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_1, DEFAULT_EPISODE_1_URL).apply()
     }
 
+    fun getEpisode2Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_2, DEFAULT_EPISODE_2_URL)
+            ?: DEFAULT_EPISODE_2_URL
+    }
+
+    fun setEpisode2Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_2, clean).apply()
+    }
+
+    fun resetEpisode2Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_2, DEFAULT_EPISODE_2_URL).apply()
+    }
+
     fun getFollowersCount(context: Context): Int {
         val extra = getPrefs(context).getInt(KEY_FOLLOWERS_BASE, 0)
         return BASE_FOLLOWERS_COUNT + extra + 1 // +1 for current user auto-follow
@@ -61,6 +77,7 @@ object DonoDoMorroManager {
      */
     fun getEpisodes(context: Context): List<Episode> {
         val ep1Url = getEpisode1Url(context)
+        val ep2Url = getEpisode2Url(context)
         return listOf(
             Episode(
                 id = "dono_morro_ep_1",
@@ -78,7 +95,7 @@ object DonoDoMorroManager {
                 episodeNumber = 2,
                 title = "Território Dividido",
                 duration = "2:10",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                videoUrl = ep2Url,
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "A tensão aumenta quando invasores cercam o mirante. Um segredo do passado vem à tona ameaçando a paz do morro.",

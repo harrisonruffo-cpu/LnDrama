@@ -355,7 +355,7 @@ fun CommunityScreen(
 
                         // Latest official announcement
                         Text(
-                            text = "📢 COMUNICADO OFICIAL DO ADM:\n\"O primeiro episódio de O Dono do Morro está rodando 100% no nosso player camuflado anti-bloqueio. Qualquer dúvida ou sugestão de novas mini-novelas, comentem abaixo!\"",
+                            text = "📢 COMUNICADO OFICIAL DO ADM:\n\"Os episódios de O Dono do Morro estão rodando 100% no nosso player exclusivo HD. Qualquer dúvida ou sugestão de novas mini-novelas, comentem abaixo!\"",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Color.White,
                                 lineHeight = 18.sp

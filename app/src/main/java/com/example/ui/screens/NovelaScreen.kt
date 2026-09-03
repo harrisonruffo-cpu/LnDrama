@@ -77,7 +77,7 @@ import com.example.ui.theme.GoldAccent
  * Exibe a Série Brasileira Ação Drama Favela ("O Dono do Morro").
  * 1. Informações completas da série (Título, Gênero, Sinopse, Estatísticas).
  * 2. Imagem principal centralizada logo abaixo das informações.
- * 3. 10 colunas com 7 episódios disponíveis e as colunas 8, 9 e 10 com cadeado.
+ * 3. 10 episódios com os 7 primeiros disponíveis e os episódios 8, 9 e 10 com cadeado.
  */
 @Composable
 fun NovelaScreen(
@@ -89,7 +89,6 @@ fun NovelaScreen(
     var episodes by remember { mutableStateOf(DonoDoMorroManager.getEpisodes(context)) }
     var isFavorite by remember { mutableStateOf(true) }
     var selectedLockedEpisode by remember { mutableStateOf<Episode?>(null) }
-    var viewModeByColumns by remember { mutableStateOf(false) } // toggle between horizontal columns and vertical card list
 
     LazyColumn(
         modifier = modifier
@@ -476,15 +475,15 @@ fun NovelaScreen(
         }
 
         // ==========================================
-        // 3. 10 COLUNAS DE EPISÓDIOS LOGO ABAIXO DA IMAGEM
-        // 7 DISPONÍVEIS E AS COLUNAS 8, 9 E 10 COM CADEADO
+        // 3. EPISÓDIOS DA SÉRIE (10 EPISÓDIOS)
+        // 7 DISPONÍVEIS E OS EPISÓDIOS 8, 9 E 10 COM CADEADO
         // ==========================================
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .testTag("ten_columns_episodes_section")
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .testTag("series_episodes_section")
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -492,32 +491,16 @@ fun NovelaScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "10 Colunas de Episódios",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = DarkSurfaceElevated,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f))
-                            ) {
-                                Text(
-                                    text = "10 COLUNAS",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = GoldAccent,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-
                         Text(
-                            text = "7 episódios disponíveis • Colunas 8, 9 e 10 com cadeado 🔒",
+                            text = "Episódios da Novela",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Episódios 1 a 7 liberados • Episódios 8, 9 e 10 com cadeado 🔒",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = Color.LightGray,
                                 fontSize = 11.sp
@@ -525,181 +508,31 @@ fun NovelaScreen(
                         )
                     }
 
-                    // Toggle View mode button
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(12.dp),
                         color = DarkSurfaceElevated,
-                        modifier = Modifier.clickable { viewModeByColumns = !viewModeByColumns }
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f))
                     ) {
                         Text(
-                            text = if (viewModeByColumns) "Ver Lista" else "Ver Colunas 📊",
-                            fontSize = 11.sp,
+                            text = "10 EPISÓDIOS",
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = GoldAccent,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
                 }
             }
         }
 
-        // Horizontal 10-Columns Scroll Showcase
-        item {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .testTag("horizontal_10_columns_row")
-            ) {
-                items(episodes) { ep ->
-                    val isLocked = !ep.isUnlocked
-                    val isAvailable = ep.isUnlocked
-
-                    Card(
-                        modifier = Modifier
-                            .width(140.dp)
-                            .clickable {
-                                if (isAvailable) {
-                                    onWatchEpisode(ep.episodeNumber - 1)
-                                } else {
-                                    selectedLockedEpisode = ep
-                                }
-                            },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isAvailable) DarkSurfaceElevated else Color(0xFF1F1212)
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.5.dp,
-                            if (isAvailable) EmeraldGreen.copy(alpha = 0.6f) else Color(0xFFFF5252).copy(alpha = 0.8f)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            // Column Header
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = if (isAvailable) EmeraldGreen.copy(alpha = 0.2f) else Color(0xFF3B1515)
-                            ) {
-                                Text(
-                                    text = "COLUNA ${ep.episodeNumber}",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = if (isAvailable) EmeraldGreen else Color(0xFFFF8A80),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Status Icon (Play vs Lock)
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isAvailable) CrimsonPrimary else Color(0xFF2C1010)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isAvailable) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "Disponível",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.Lock,
-                                        contentDescription = "Cadeado",
-                                        tint = Color(0xFFFF5252),
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "Episódio ${ep.episodeNumber}",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = ep.title,
-                                fontSize = 10.sp,
-                                color = Color.LightGray,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Status Badge
-                            if (isAvailable) {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = EmeraldGreen.copy(alpha = 0.15f)
-                                ) {
-                                    Text(
-                                        text = "DISPONÍVEL ✅",
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = EmeraldGreen,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = Color(0xFF4A1212)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Lock,
-                                            contentDescription = null,
-                                            tint = Color(0xFFFF8A80),
-                                            modifier = Modifier.size(10.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(2.dp))
-                                        Text(
-                                            text = "CADEADO",
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(0xFFFF8A80)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Detailed 10 Column Cards List
+        // Lista fluida, limpa e única com os 10 episódios
         items(episodes) { ep ->
-            val isLocked = !ep.isUnlocked
             val isAvailable = ep.isUnlocked
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
                     .clickable {
                         if (isAvailable) {
                             onWatchEpisode(ep.episodeNumber - 1)
@@ -707,10 +540,10 @@ fun NovelaScreen(
                             selectedLockedEpisode = ep
                         }
                     }
-                    .testTag("column_item_${ep.episodeNumber}"),
-                shape = RoundedCornerShape(12.dp),
+                    .testTag("episode_item_${ep.episodeNumber}"),
+                shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isAvailable) DarkSurfaceElevated else Color(0xFF1C1313)
+                    containerColor = if (isAvailable) DarkSurfaceElevated else Color(0xFF1B1212)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
@@ -723,9 +556,9 @@ fun NovelaScreen(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Column indicator box
+                    // Episode Number & Play / Lock box
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = if (isAvailable) CrimsonPrimary else Color(0xFF3B1515),
                         modifier = Modifier.size(46.dp)
                     ) {
@@ -735,7 +568,7 @@ fun NovelaScreen(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = "Assistir",
                                     tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(26.dp)
                                 )
                             } else {
                                 Icon(
@@ -750,7 +583,7 @@ fun NovelaScreen(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    // Title & Synopsis Column
+                    // Title, duration and synopsis
                     Column(modifier = Modifier.weight(1f)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -761,7 +594,7 @@ fun NovelaScreen(
                                 color = if (isAvailable) EmeraldGreen.copy(alpha = 0.2f) else Color(0xFF4A1212)
                             ) {
                                 Text(
-                                    text = "COLUNA ${ep.episodeNumber}",
+                                    text = "EPISÓDIO ${ep.episodeNumber}",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Black,
                                     color = if (isAvailable) EmeraldGreen else Color(0xFFFF8A80),
@@ -769,26 +602,18 @@ fun NovelaScreen(
                                 )
                             }
 
-                            if (ep.episodeNumber == 1) {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = GoldAccent.copy(alpha = 0.2f)
-                                ) {
-                                    Text(
-                                        text = "🛡️ Player Camuflado",
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = GoldAccent,
-                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "• ${ep.duration}",
+                                fontSize = 10.sp,
+                                color = Color.Gray,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(3.dp))
 
                         Text(
-                            text = "Ep ${ep.episodeNumber}: ${ep.title}",
+                            text = ep.title,
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = if (isAvailable) Color.White else Color.LightGray
@@ -796,6 +621,8 @@ fun NovelaScreen(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+
+                        Spacer(modifier = Modifier.height(2.dp))
 
                         Text(
                             text = ep.synopsis,
@@ -810,29 +637,29 @@ fun NovelaScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Right Status Action (Play Button or Lock Badge)
+                    // Right status button
                     if (isAvailable) {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(14.dp),
                             color = EmeraldGreen.copy(alpha = 0.15f),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreen.copy(alpha = 0.5f))
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreen.copy(alpha = 0.6f))
                         ) {
                             Text(
-                                text = "Disponível ▶️",
+                                text = "Assistir ▶️",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = EmeraldGreen,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                             )
                         }
                     } else {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(14.dp),
                             color = Color(0xFF3B1515),
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFF5252).copy(alpha = 0.7f))
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -856,7 +683,7 @@ fun NovelaScreen(
         }
     }
 
-    // Modal Dialog for Locked Episode (Colunas 8, 9, 10)
+    // Modal Dialog for Locked Episode (Episódios 8, 9, 10)
     selectedLockedEpisode?.let { lockedEp ->
         AlertDialog(
             onDismissRequest = { selectedLockedEpisode = null },
@@ -870,7 +697,7 @@ fun NovelaScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Coluna ${lockedEp.episodeNumber} com Cadeado",
+                        text = "Episódio ${lockedEp.episodeNumber} com Cadeado",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -881,7 +708,7 @@ fun NovelaScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "O Episódio ${lockedEp.episodeNumber} (${lockedEp.title}) está bloqueado por padrão nas colunas 8, 9 e 10.",
+                        text = "O Episódio ${lockedEp.episodeNumber} (${lockedEp.title}) está bloqueado para os lançamentos da temporada.",
                         style = MaterialTheme.typography.bodyMedium.copy(color = Color.LightGray)
                     )
                     Text(

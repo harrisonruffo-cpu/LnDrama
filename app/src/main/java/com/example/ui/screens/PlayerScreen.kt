@@ -148,7 +148,7 @@ fun PlayerScreen(
                 )
             }
 
-            // Camouflage Badge
+            // Playback Badge
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = Color.Black.copy(alpha = 0.75f),
@@ -160,13 +160,13 @@ fun PlayerScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Security,
-                        contentDescription = "Proteção Anti-Bloqueio",
+                        contentDescription = "Proteção de Reprodução",
                         tint = EmeraldGreen,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Player Camuflado ✅",
+                        text = "Reprodução HD ✅",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
@@ -658,29 +658,31 @@ fun PlayerScreen(
             }
         }
 
-        // URL Test & Camouflage Setting Dialog
+        // URL Test & Playback Setting Dialog
         if (showUrlTestDialog) {
-            var inputUrl by remember { mutableStateOf(DonoDoMorroManager.getEpisode1Url(context)) }
+            var inputUrl1 by remember { mutableStateOf(DonoDoMorroManager.getEpisode1Url(context)) }
+            var inputUrl2 by remember { mutableStateOf(DonoDoMorroManager.getEpisode2Url(context)) }
 
             AlertDialog(
                 onDismissRequest = { showUrlTestDialog = false },
                 title = {
                     Text(
-                        text = "Configurar Link Camuflado (Episódio 1)",
+                        text = "Configurar Links dos Episódios",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 text = {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            text = "Insira qualquer link do YouTube (Shorts ou normal). O player camuflado irá remover anúncios e menus externos automaticamente.",
+                            text = "Insira os links de vídeo ou YouTube. A reprodução é otimizada diretamente no player do app.",
                             fontSize = 12.sp,
                             color = Color.LightGray
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Episódio 1
                         OutlinedTextField(
-                            value = inputUrl,
-                            onValueChange = { inputUrl = it },
+                            value = inputUrl1,
+                            onValueChange = { inputUrl1 = it },
                             label = { Text("URL do Episódio 1") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -688,20 +690,34 @@ fun PlayerScreen(
                                 unfocusedBorderColor = Color.Gray
                             )
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        val detectedId = YouTubeHelper.extractVideoId(inputUrl)
-                        if (detectedId != null) {
+                        val detectedId1 = YouTubeHelper.extractVideoId(inputUrl1)
+                        if (detectedId1 != null) {
                             Text(
-                                text = "✅ ID Detectado: $detectedId (Camuflagem Ativa)",
+                                text = "✅ Ep 1 Detectado (ID: $detectedId1)",
                                 fontSize = 11.sp,
                                 color = EmeraldGreen,
                                 fontWeight = FontWeight.Bold
                             )
-                        } else {
+                        }
+
+                        // Episódio 2
+                        OutlinedTextField(
+                            value = inputUrl2,
+                            onValueChange = { inputUrl2 = it },
+                            label = { Text("URL do Episódio 2") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId2 = YouTubeHelper.extractVideoId(inputUrl2)
+                        if (detectedId2 != null) {
                             Text(
-                                text = "ℹ️ Link será transmitido no player direto",
+                                text = "✅ Ep 2 Detectado (ID: $detectedId2)",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -709,27 +725,29 @@ fun PlayerScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            DonoDoMorroManager.setEpisode1Url(context, inputUrl)
+                            DonoDoMorroManager.setEpisode1Url(context, inputUrl1)
+                            DonoDoMorroManager.setEpisode2Url(context, inputUrl2)
                             episodes = DonoDoMorroManager.getEpisodes(context)
                             showUrlTestDialog = false
-                            Toast.makeText(context, "Link do Episódio 1 atualizado com sucesso!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Links dos episódios salvos com sucesso!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = CrimsonPrimary)
                     ) {
-                        Text("Salvar & Testar")
+                        Text("Salvar Links")
                     }
                 },
                 dismissButton = {
                     Button(
                         onClick = {
                             DonoDoMorroManager.resetEpisode1Url(context)
+                            DonoDoMorroManager.resetEpisode2Url(context)
                             episodes = DonoDoMorroManager.getEpisodes(context)
                             showUrlTestDialog = false
-                            Toast.makeText(context, "Restaurado para o link padrão oficial", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Links restaurados para o padrão oficial", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceElevated)
                     ) {
-                        Text("Restaurar Padrão")
+                        Text("Restaurar Padrões")
                     }
                 },
                 containerColor = DarkSurface
