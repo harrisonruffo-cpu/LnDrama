@@ -37,16 +37,16 @@ class NovelaRepository {
             Drama(
                 id = "dono_do_morro",
                 title = "O Dono do Morro",
-                synopsis = "No comando do morro mais cobiçado da capital, um líder implacável vê seu império balançar quando uma médica da zona sul invade seu destino.",
-                coverUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
-                bannerUrl = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80",
-                category = "Ação & Romance",
-                episodesCount = 12,
+                synopsis = "Superprodução Brasileira: No comando do morro mais cobiçado da capital, um líder implacável vê seu império balançar quando uma médica da zona sul invade seu destino. Conflitos de facções, ação policial e paixão incontrolável na favela.",
+                coverUrl = com.example.data.util.DonoDoMorroManager.OFFICIAL_SERIES_IMAGE_URL,
+                bannerUrl = com.example.data.util.DonoDoMorroManager.OFFICIAL_SERIES_IMAGE_URL,
+                category = "Série Brasileira: Ação • Drama • Favela",
+                episodesCount = 10,
                 rating = "4.9",
                 views = "2.8M",
                 isFeatured = true,
                 isTrending = true,
-                badge = "DESTAQUE VIP"
+                badge = "DESTAQUE NACIONAL 🇧🇷"
             ),
             Drama(
                 id = "vidas_cruzadas",

@@ -70,7 +70,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.Episode
 import com.example.data.repository.NovelaRepository
+import com.example.data.util.AuthManager
 import com.example.data.util.DonoDoMorroManager
+import com.example.data.util.InteractionManager
 import com.example.data.util.YouTubeHelper
 import com.example.ui.components.CamouflagedPlayerView
 import com.example.ui.theme.CrimsonDark
@@ -84,21 +86,28 @@ import com.example.ui.theme.GoldAccent
 @Composable
 fun PlayerScreen(
     repository: NovelaRepository,
+    initialEpisodeIndex: Int = 0,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var episodes by remember { mutableStateOf(DonoDoMorroManager.getEpisodes(context)) }
-    var currentEpisodeIndex by remember { mutableIntStateOf(0) }
+    var currentEpisodeIndex by remember(initialEpisodeIndex) {
+        mutableIntStateOf(initialEpisodeIndex.coerceIn(0, (episodes.size - 1).coerceAtLeast(0)))
+    }
     val currentEpisode = episodes.getOrElse(currentEpisodeIndex) { episodes.first() }
 
-    var isLiked by remember { mutableStateOf(false) }
-    var likesCount by remember { mutableIntStateOf(currentEpisode.likesCount) }
+    var isLiked by remember(currentEpisode.episodeNumber) {
+        mutableStateOf(InteractionManager.isEpisodeLikedByUser(context, currentEpisode.episodeNumber))
+    }
+    var likesCount by remember(currentEpisode.episodeNumber) {
+        mutableIntStateOf(InteractionManager.getEpisodeLikes(context, currentEpisode.episodeNumber, currentEpisode.likesCount))
+    }
     var showEpisodesSheet by remember { mutableStateOf(false) }
     var showCommentsSheet by remember { mutableStateOf(false) }
     var showUrlTestDialog by remember { mutableStateOf(false) }
     var newCommentText by remember { mutableStateOf("") }
-    val comments by repository.comments.collectAsState()
+    var realComments by remember { mutableStateOf(InteractionManager.getComments(context)) }
 
     val sheetState = rememberModalBottomSheetState()
     val commentsSheetState = rememberModalBottomSheetState()
@@ -195,8 +204,11 @@ fun PlayerScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 IconButton(
                     onClick = {
-                        isLiked = !isLiked
-                        likesCount += if (isLiked) 1 else -1
+                        val result = InteractionManager.toggleEpisodeLike(context, currentEpisode.episodeNumber, likesCount)
+                        isLiked = result.first
+                        likesCount = result.second
+                        val msg = if (isLiked) "Episódio curtido! Registrado em nuvem ❤️" else "Curtida removida"
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .size(48.dp)
@@ -223,7 +235,10 @@ fun PlayerScreen(
             // Comments Action
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 IconButton(
-                    onClick = { showCommentsSheet = true },
+                    onClick = {
+                        realComments = InteractionManager.getComments(context)
+                        showCommentsSheet = true
+                    },
                     modifier = Modifier
                         .size(48.dp)
                         .background(Color.Black.copy(alpha = 0.5f), CircleShape)
@@ -238,7 +253,7 @@ fun PlayerScreen(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${comments.size}",
+                    text = "${realComments.size}",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -532,7 +547,7 @@ fun PlayerScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Comentários (${comments.size})",
+                        text = "Comentários (${realComments.size})",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -544,7 +559,7 @@ fun PlayerScreen(
                         modifier = Modifier.height(300.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(comments) { comment ->
+                        items(realComments) { comment ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.Top
@@ -559,7 +574,7 @@ fun PlayerScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (comment.isOfficial) "👑" else comment.author.first().toString(),
+                                        text = if (comment.isOfficial) "👑" else comment.author.firstOrNull()?.toString() ?: "U",
                                         fontSize = 16.sp
                                     )
                                 }
@@ -614,8 +629,16 @@ fun PlayerScreen(
                         IconButton(
                             onClick = {
                                 if (newCommentText.isNotBlank()) {
-                                    repository.addComment(newCommentText)
+                                    val currentUser = AuthManager.getCurrentUser(context)
+                                    val updated = InteractionManager.addComment(
+                                        context = context,
+                                        content = newCommentText,
+                                        author = currentUser.name,
+                                        avatarUrl = currentUser.photoUrl
+                                    )
+                                    realComments = updated
                                     newCommentText = ""
+                                    Toast.makeText(context, "Comentário publicado com sucesso! Registrado em nuvem.", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             modifier = Modifier

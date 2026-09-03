@@ -17,7 +17,14 @@ object DonoDoMorroManager {
     const val OFFICIAL_ADM_EMAIL = "harrisonruffo@gmail.com"
     const val OFFICIAL_ADM_ROLE = "Desenvolvedor & ADM Oficial"
     const val OFFICIAL_ADM_PHOTO_URL = "https://lh3.googleusercontent.com/d/1VWIfZ8lcuPWCc2ijTwvX6WoWnbqkUpO7"
+    // Imagem principal oficial da novela: https://drive.google.com/file/d/1ngEUH5l0R0c58zZ-y26kTDqBwFv5dr64/view?usp=drivesdk
+    const val OFFICIAL_SERIES_IMAGE_URL = "https://lh3.googleusercontent.com/d/1ngEUH5l0R0c58zZ-y26kTDqBwFv5dr64"
     const val BASE_FOLLOWERS_COUNT = 28542
+
+    // Informações da Série Brasileira: Ação, Drama, Favela
+    const val SERIES_TITLE = "O Dono do Morro"
+    const val SERIES_CATEGORY = "Série Brasileira: Ação • Drama • Favela"
+    const val SERIES_SYNOPSIS = "Uma emocionante superprodução brasileira onde poder, família, lealdade e uma paixão proibida entram em rota de colisão no comando do morro mais cobiçado da capital."
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -47,6 +54,11 @@ object DonoDoMorroManager {
         getPrefs(context).edit().putInt(KEY_FOLLOWERS_BASE, current + 1).apply()
     }
 
+    /**
+     * 10 Episódios da Série Brasileira Ação Drama Favela:
+     * - Episódios 1 a 7: DISPONÍVEIS (isUnlocked = true)
+     * - Episódios 8, 9 e 10: COM CADEADO (isUnlocked = false)
+     */
     fun getEpisodes(context: Context): List<Episode> {
         val ep1Url = getEpisode1Url(context)
         return listOf(
@@ -59,7 +71,7 @@ object DonoDoMorroManager {
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "Clara sobe a comunidade em busca de respostas e cruza olhares pela primeira vez com o homem mais temido e respeitado do Dendê.",
-                likesCount = 4820
+                likesCount = 5820
             ),
             Episode(
                 id = "dono_morro_ep_2",
@@ -70,7 +82,7 @@ object DonoDoMorroManager {
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "A tensão aumenta quando invasores cercam o mirante. Um segredo do passado vem à tona ameaçando a paz do morro.",
-                likesCount = 3915
+                likesCount = 4915
             ),
             Episode(
                 id = "dono_morro_ep_3",
@@ -79,42 +91,86 @@ object DonoDoMorroManager {
                 duration = "1:55",
                 videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
                 isUnlocked = true,
-                coinsCost = 10,
+                coinsCost = 0,
                 synopsis = "A alta cúpula descobre as visitas frequentes de Clara. Um ultimato coloca a lealdade da família à prova.",
-                likesCount = 3120
+                likesCount = 4120
             ),
             Episode(
                 id = "dono_morro_ep_4",
                 episodeNumber = 4,
-                title = "O Beijo Proibido",
+                title = "O Beijo Proibido na Laje",
                 duration = "2:30",
                 videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                isUnlocked = false,
-                coinsCost = 15,
+                isUnlocked = true,
+                coinsCost = 0,
                 synopsis = "Na laje iluminada pelo luar do Rio, a atração se torna irresistível e quebra todas as regras estabelecidas.",
-                likesCount = 2840
+                likesCount = 3840
             ),
             Episode(
                 id = "dono_morro_ep_5",
                 episodeNumber = 5,
-                title = "Pacto de Sangue",
+                title = "Pacto de Sangue e Honra",
                 duration = "2:15",
                 videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-                isUnlocked = false,
-                coinsCost = 20,
+                isUnlocked = true,
+                coinsCost = 0,
                 synopsis = "Uma emboscada na baixada exige uma aliança improvável para salvar a vida de quem ele jurou proteger.",
-                likesCount = 2410
+                likesCount = 3410
             ),
             Episode(
                 id = "dono_morro_ep_6",
                 episodeNumber = 6,
-                title = "A Grande Revelação",
+                title = "Invasão na Madrugada",
                 duration = "2:40",
-                videoUrl = ep1Url, // Permite assistir novamente com camuflagem
-                isUnlocked = false,
+                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                isUnlocked = true,
+                coinsCost = 0,
+                synopsis = "Tiros ecoam no beco principal. Clara decide enfrentar o perigo para salvar o amor de sua vida.",
+                likesCount = 3190
+            ),
+            Episode(
+                id = "dono_morro_ep_7",
+                episodeNumber = 7,
+                title = "A Fuga pelas Vielas",
+                duration = "2:20",
+                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+                isUnlocked = true,
+                coinsCost = 0,
+                synopsis = "Cercados pelos inimigos, uma rota de fuga secreta pelas lajes se torna a única esperança de sobrevivência.",
+                likesCount = 2950
+            ),
+            Episode(
+                id = "dono_morro_ep_8",
+                episodeNumber = 8,
+                title = "Confronto no Mirante",
+                duration = "2:35",
+                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                isUnlocked = false, // COM CADEADO
+                coinsCost = 15,
+                synopsis = "No ponto mais alto da favela, velhas contas são acertadas cara a cara com o traidor do movimento.",
+                likesCount = 2710
+            ),
+            Episode(
+                id = "dono_morro_ep_9",
+                episodeNumber = 9,
+                title = "A Traição Revelada",
+                duration = "2:50",
+                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                isUnlocked = false, // COM CADEADO
+                coinsCost = 20,
+                synopsis = "Uma gravação secreta desmascara quem estava vendendo as informações da comunidade aos rivais.",
+                likesCount = 2540
+            ),
+            Episode(
+                id = "dono_morro_ep_10",
+                episodeNumber = 10,
+                title = "O Julgamento Final do Morro",
+                duration = "3:10",
+                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                isUnlocked = false, // COM CADEADO
                 coinsCost = 25,
-                synopsis = "A verdade sobre a herança roubada explode na cara dos vilões em um confronto eletrizante.",
-                likesCount = 1990
+                synopsis = "O grande desfecho da temporada: a comunidade se une para a decisão que mudará o destino de todos.",
+                likesCount = 2380
             )
         )
     }

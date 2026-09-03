@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Link
@@ -38,6 +44,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -50,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -59,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.data.util.AuthManager
 import com.example.data.util.DonoDoMorroManager
 import com.example.ui.theme.CrimsonDark
 import com.example.ui.theme.CrimsonPrimary
@@ -73,7 +82,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var viewOfficialAdmin by remember { mutableStateOf(false) }
+    var viewOfficialAdmin by remember { mutableStateOf(true) }
     val followersCount = remember { DonoDoMorroManager.getFollowersCount(context) }
 
     LazyColumn(
@@ -93,7 +102,7 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (viewOfficialAdmin) "Visualizando Perfil do ADM" else "Meu Perfil de Usuário",
+                    text = if (viewOfficialAdmin) "Perfil ADM Desenvolvedor" else "Meu Perfil de Usuário",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -103,6 +112,7 @@ fun ProfileScreen(
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     color = DarkSurfaceElevated,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f)),
                     modifier = Modifier.clickable { viewOfficialAdmin = !viewOfficialAdmin }
                 ) {
                     Row(
@@ -110,7 +120,7 @@ fun ProfileScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (viewOfficialAdmin) "Ver Meu Perfil" else "Ver ADM Oficial 👑",
+                            text = if (viewOfficialAdmin) "Ver Convidado" else "Ver ADM Oficial 👑",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = if (viewOfficialAdmin) Color.White else GoldAccent,
                                 fontWeight = FontWeight.Bold
@@ -127,12 +137,20 @@ fun ProfileScreen(
                 // Official Admin Profile: Harrison Ruffo
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
                     border = androidx.compose.foundation.BorderStroke(
                         2.dp,
-                        Brush.linearGradient(listOf(GoldAccent, CrimsonPrimary))
-                    )
+                        Brush.linearGradient(
+                            listOf(
+                                Color(0xFF00E5FF),
+                                GoldAccent,
+                                CrimsonPrimary,
+                                Color(0xFF00E5FF)
+                            )
+                        )
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -140,64 +158,112 @@ fun ProfileScreen(
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(contentAlignment = Alignment.TopEnd) {
-                            Box(
-                                modifier = Modifier
-                                    .size(90.dp)
-                                    .border(
-                                        3.dp,
-                                        Brush.sweepGradient(listOf(GoldAccent, CrimsonPrimary, GoldAccent)),
-                                        CircleShape
-                                    )
-                                    .padding(4.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Black)
-                            ) {
-                                AsyncImage(
-                                    model = DonoDoMorroManager.OFFICIAL_ADM_PHOTO_URL,
-                                    contentDescription = DonoDoMorroManager.OFFICIAL_ADM_NAME,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            Surface(
-                                shape = CircleShape,
-                                color = GoldAccent,
-                                modifier = Modifier.size(26.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(text = "👑", fontSize = 14.sp)
-                                }
-                            }
-                        }
+                        // Moldura crivada de diamante e Coroa de rei centralizada
+                        DiamondRoyalProfileAvatar(
+                            photoUrl = DonoDoMorroManager.OFFICIAL_ADM_PHOTO_URL
+                        )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = DonoDoMorroManager.OFFICIAL_ADM_NAME,
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = EmeraldGreen,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
+                        // Nome Oficial
                         Text(
-                            text = DonoDoMorroManager.OFFICIAL_ADM_EMAIL,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = DonoDoMorroManager.OFFICIAL_ADM_NAME,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                letterSpacing = 0.5.sp
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Símbolo de Verificado Crivado de Diamante e Coroa de Rei
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color(0xFF031926),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.5.dp,
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        Color(0xFF00E5FF),
+                                        Color(0xFFFFD700),
+                                        Color(0xFF00E5FF)
+                                    )
+                                )
+                            ),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(text = "💎", fontSize = 14.sp)
+                                Text(text = "👑", fontSize = 14.sp)
+                                Icon(
+                                    imageVector = Icons.Default.Verified,
+                                    contentDescription = "Verificado",
+                                    tint = Color(0xFF00E5FF),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "ADM OFICIAL VERIFICADO",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFE0F7FA),
+                                    letterSpacing = 0.8.sp
+                                )
+                                Text(text = "💎", fontSize = 14.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Email Oficial do Desenvolvedor com botão de cópia e envio
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color.Black.copy(alpha = 0.5f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C384A)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Email Desenvolvedor", DonoDoMorroManager.OFFICIAL_ADM_EMAIL)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "E-mail oficial copiado: ${DonoDoMorroManager.OFFICIAL_ADM_EMAIL}", Toast.LENGTH_SHORT).show()
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Email,
+                                        contentDescription = "Email Oficial",
+                                        tint = GoldAccent,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = DonoDoMorroManager.OFFICIAL_ADM_EMAIL,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copiar E-mail",
+                                    tint = Color.LightGray,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         // Badges Row
                         Row(
@@ -222,12 +288,12 @@ fun ProfileScreen(
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
-                            Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFF3B3005)) {
+                            Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFF003049)) {
                                 Text(
-                                    text = "⚡ VIP Vitalício",
+                                    text = "💎 Dono do App",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = GoldAccent,
+                                    color = Color(0xFF80D8FF),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
@@ -269,7 +335,7 @@ fun ProfileScreen(
                                     border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreen)
                                 ) {
                                     Text(
-                                        text = "Todos do App ✅",
+                                        text = "Todos do App Seguem ✅",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = EmeraldGreen,
                                             fontWeight = FontWeight.Bold
@@ -279,10 +345,42 @@ fun ProfileScreen(
                                 }
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Contact Developer Action Button
+                        Button(
+                            onClick = {
+                                try {
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:${DonoDoMorroManager.OFFICIAL_ADM_EMAIL}")
+                                        putExtra(Intent.EXTRA_SUBJECT, "Contato Litoral Novelas - Desenvolvedor Harrison Ruffo")
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Enviar E-mail"))
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "E-mail: ${DonoDoMorroManager.OFFICIAL_ADM_EMAIL}", Toast.LENGTH_LONG).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = CrimsonPrimary),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Entrar em Contato com o Desenvolvedor", fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             } else {
                 // Current App User Profile
+                val loggedUser = remember { AuthManager.getCurrentUser(context) }
+                val authProvider = remember { AuthManager.getAuthProvider(context) }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -301,18 +399,18 @@ fun ProfileScreen(
                                 .background(Brush.linearGradient(listOf(CrimsonPrimary, CrimsonDark))),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(44.dp)
+                            Text(
+                                text = loggedUser.name.firstOrNull()?.toString()?.uppercase() ?: "U",
+                                fontSize = 34.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
                             )
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Convidado VIP",
+                            text = loggedUser.name,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -320,11 +418,27 @@ fun ProfileScreen(
                         )
 
                         Text(
-                            text = "usuario@litoralnovelas.com",
+                            text = loggedUser.email,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF1E293B),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4285F4))
+                        ) {
+                            Text(
+                                text = "Autenticado via $authProvider • Salvo em Nuvem ☁️",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF80D8FF),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -495,3 +609,115 @@ fun ProfileMenuItem(
         }
     }
 }
+
+/**
+ * Moldura crivada de diamante e Coroa de rei centralizada para a foto de perfil
+ */
+@Composable
+fun DiamondRoyalProfileAvatar(
+    photoUrl: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.size(130.dp)
+    ) {
+        // Shimmering diamond & royal gold outer ring
+        Box(
+            modifier = Modifier
+                .size(116.dp)
+                .border(
+                    width = 4.dp,
+                    brush = Brush.sweepGradient(
+                        listOf(
+                            Color(0xFF00E5FF), // Diamond Cyan
+                            Color(0xFFFFFFFF), // Diamond Pure White
+                            GoldAccent,        // Royal Gold
+                            Color(0xFF80D8FF), // Diamond Sparkle
+                            Color(0xFFFFD700), // Pure Gold
+                            Color(0xFF00E5FF)  // Diamond Cyan
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .padding(4.dp)
+                .border(
+                    width = 2.dp,
+                    brush = Brush.linearGradient(
+                        listOf(Color(0xFF80D8FF), GoldAccent, Color(0xFF00E5FF))
+                    ),
+                    shape = CircleShape
+                )
+                .padding(3.dp)
+                .clip(CircleShape)
+                .background(Color.Black)
+        ) {
+            AsyncImage(
+                model = photoUrl,
+                contentDescription = "Foto Oficial Harrison Ruffo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // Diamond sparkles studded around the frame (Crivado de Diamantes)
+        Text(
+            text = "💎",
+            fontSize = 15.sp,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 4.dp, top = 14.dp)
+        )
+        Text(
+            text = "💎",
+            fontSize = 15.sp,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 4.dp, top = 14.dp)
+        )
+        Text(
+            text = "💎",
+            fontSize = 15.sp,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 4.dp, bottom = 8.dp)
+        )
+        Text(
+            text = "💎",
+            fontSize = 15.sp,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 4.dp, bottom = 8.dp)
+        )
+
+        // Coroa de Rei Imperial at the top center of the frame
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFF1E1402),
+            border = androidx.compose.foundation.BorderStroke(
+                1.5.dp,
+                Brush.linearGradient(listOf(GoldAccent, Color(0xFF00E5FF)))
+            ),
+            shadowElevation = 6.dp,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "👑", fontSize = 14.sp)
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "REI",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Black,
+                    color = GoldAccent,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    }
+}
+
