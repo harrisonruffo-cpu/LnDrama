@@ -29,14 +29,17 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -67,6 +70,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.R
 import com.example.data.util.AuthManager
 import com.example.data.util.DonoDoMorroManager
 import com.example.ui.theme.CrimsonDark
@@ -79,6 +84,8 @@ import com.example.ui.theme.GoldAccent
 @Composable
 fun ProfileScreen(
     onConfigureUrl: () -> Unit,
+    onOpenNovela: () -> Unit = {},
+    onWatchEpisode: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -511,6 +518,53 @@ fun ProfileScreen(
             }
         }
 
+        // Novela Favorita Fixada no Perfil do ADM
+        item {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "📌", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (viewOfficialAdmin) "Novela Favorita Fixada pelo ADM" else "Novela Fixada pelo ADM Harrison",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = GoldAccent.copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.6f))
+                    ) {
+                        Text(
+                            text = "DESTAQUE 💎",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = GoldAccent,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AdmPinnedNovelaCard(
+                    viewOfficialAdmin = viewOfficialAdmin,
+                    onOpenNovela = onOpenNovela,
+                    onWatchEpisode = onWatchEpisode
+                )
+            }
+        }
+
         // Configuration & Links Section
         item {
             Text(
@@ -720,4 +774,341 @@ fun DiamondRoyalProfileAvatar(
         }
     }
 }
+
+/**
+ * Card da Novela Favorita Fixada no Perfil do ADM Oficial (Harrison Ruffo)
+ */
+@Composable
+fun AdmPinnedNovelaCard(
+    viewOfficialAdmin: Boolean,
+    onOpenNovela: () -> Unit,
+    onWatchEpisode: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .border(
+                2.dp,
+                Brush.linearGradient(
+                    listOf(
+                        GoldAccent,
+                        Color(0xFF00E5FF),
+                        CrimsonPrimary,
+                        GoldAccent
+                    )
+                ),
+                RoundedCornerShape(18.dp)
+            )
+            .shadow(10.dp, RoundedCornerShape(18.dp))
+            .clickable { onOpenNovela() }
+            .testTag("adm_pinned_favorite_novela_card"),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Header Bar Fixada pelo ADM
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color(0xFF221603),
+                                Color(0xFF0B2433),
+                                Color(0xFF22050A)
+                            )
+                        )
+                    )
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(text = "📌", fontSize = 18.sp)
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (viewOfficialAdmin) "NOVELA FAVORITA FIXADA" else "FIXADA PELO ADM HARRISON",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = GoldAccent,
+                                    letterSpacing = 0.6.sp,
+                                    fontSize = 11.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "👑", fontSize = 12.sp)
+                        }
+                        Text(
+                            text = "Recomendação Oficial Nº 1 do Criador",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = Color.LightGray,
+                                fontSize = 9.5.sp
+                            )
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = CrimsonPrimary.copy(alpha = 0.25f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CrimsonPrimary)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = CrimsonPrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Favorita ❤️",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            // Cover Image Banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(210.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(R.drawable.img_dono_morro_featured)
+                        .crossfade(true)
+                        .placeholder(R.drawable.img_dono_morro_featured)
+                        .error(R.drawable.img_dono_morro_featured)
+                        .fallback(R.drawable.img_dono_morro_featured)
+                        .build(),
+                    contentDescription = "Capa Oficial O Dono do Morro",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Gradient scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.35f),
+                                    Color.Black.copy(alpha = 0.95f)
+                                )
+                            )
+                        )
+                )
+
+                // Top Right Badge: 10 EPISÓDIOS
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.Black.copy(alpha = 0.85f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.9f)),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Videocam,
+                            contentDescription = null,
+                            tint = GoldAccent,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "10 EPISÓDIOS",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = GoldAccent,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+                }
+
+                // Bottom badges on top of cover
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFFE53935)
+                    ) {
+                        Text(
+                            text = "18+",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "AÇÃO • FAVELA • DRAMA",
+                        color = GoldAccent,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Info Content
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = DonoDoMorroManager.SERIES_TITLE,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            fontSize = 18.sp
+                        )
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = EmeraldGreen.copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreen)
+                    ) {
+                        Text(
+                            text = "7 EPS LIBERADOS ✅",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = DonoDoMorroManager.SERIES_SYNOPSIS,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    ),
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Dedicated ADM Quote box
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.Black.copy(alpha = 0.45f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2C384A)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(text = "✍️", fontSize = 15.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "\"Minha produção e novela favorita do canal Litoral Produções. 10 episódios eletrizantes gravados com máxima qualidade para a nossa comunidade!\"",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFFE0F7FA),
+                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    fontSize = 11.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = "— Harrison Ruffo (Criador, Produtor & ADM)",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = GoldAccent,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onOpenNovela() },
+                        colors = ButtonDefaults.buttonColors(containerColor = CrimsonPrimary),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Ver Episódios",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = { onWatchEpisode(0) },
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Videocam,
+                            contentDescription = null,
+                            tint = GoldAccent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Assistir Ep 1",
+                            color = GoldAccent,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 

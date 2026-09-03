@@ -227,6 +227,13 @@ fun MainScreen(
                         onConfigureUrl = {
                             selectedEpisodeIndex = 0
                             selectedTab = ScreenTab.WATCH
+                        },
+                        onOpenNovela = {
+                            selectedTab = ScreenTab.NOVELA
+                        },
+                        onWatchEpisode = { epIndex ->
+                            selectedEpisodeIndex = epIndex
+                            selectedTab = ScreenTab.WATCH
                         }
                     )
                 }

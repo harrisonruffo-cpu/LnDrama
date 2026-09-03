@@ -519,43 +519,21 @@ fun NovelaScreen(
                     .padding(horizontal = 16.dp, vertical = 10.dp)
                     .testTag("series_episodes_section")
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Episódios da Novela",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = "Episódios 1 a 7 liberados • Episódios 8, 9 e 10 com cadeado 🔒",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color.LightGray,
-                                fontSize = 11.sp
-                            )
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = DarkSurfaceElevated,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.5f))
-                    ) {
-                        Text(
-                            text = "10 EPISÓDIOS",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = GoldAccent,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
+                Text(
+                    text = "Episódios da Novela",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = "Episódios 1 a 7 liberados • Episódios 8, 9 e 10 com cadeado 🔒",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Color.LightGray,
+                        fontSize = 11.sp
+                    )
+                )
             }
         }
 
