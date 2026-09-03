@@ -12,15 +12,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val CinematicDarkColorScheme = darkColorScheme(
-    primary = CrimsonPrimary,
+    primary = OceanBluePrimary,
     onPrimary = Color.White,
-    primaryContainer = CrimsonDark,
-    onPrimaryContainer = Color.White,
-    secondary = GoldAccent,
+    primaryContainer = DeepOceanNavy,
+    onPrimaryContainer = NeonCyanAccent,
+    secondary = NeonCyanAccent,
     onSecondary = Color.Black,
-    secondaryContainer = Color(0xFF3B3005),
-    onSecondaryContainer = GoldAccent,
-    tertiary = CrimsonLight,
+    secondaryContainer = DarkSurfaceElevated,
+    onSecondaryContainer = NeonCyanAccent,
+    tertiary = ElectricBlueGlow,
     background = DarkBackground,
     onBackground = TextPrimary,
     surface = DarkSurface,

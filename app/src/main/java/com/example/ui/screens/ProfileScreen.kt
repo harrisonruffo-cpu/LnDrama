@@ -532,8 +532,8 @@ fun ProfileScreen(
                 Column {
                     ProfileMenuItem(
                         icon = Icons.Default.Link,
-                        title = "Link Camuflado do Episódio 1",
-                        subtitle = DonoDoMorroManager.getEpisode1Url(context),
+                        title = "Links Oficiais dos Episódios (1 a 7)",
+                        subtitle = "Ep 1 a 7: OK (Toque para gerenciar)",
                         onClick = onConfigureUrl
                     )
 

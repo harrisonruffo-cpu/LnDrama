@@ -8,11 +8,21 @@ object DonoDoMorroManager {
     private const val PREFS_NAME = "dono_do_morro_prefs"
     private const val KEY_CUSTOM_EPISODE_1 = "custom_episode_1_url"
     private const val KEY_CUSTOM_EPISODE_2 = "custom_episode_2_url"
+    private const val KEY_CUSTOM_EPISODE_3 = "custom_episode_3_url"
+    private const val KEY_CUSTOM_EPISODE_4 = "custom_episode_4_url"
+    private const val KEY_CUSTOM_EPISODE_5 = "custom_episode_5_url"
+    private const val KEY_CUSTOM_EPISODE_6 = "custom_episode_6_url"
+    private const val KEY_CUSTOM_EPISODE_7 = "custom_episode_7_url"
     private const val KEY_FOLLOWERS_BASE = "followers_base_count"
 
     // Links padrão oficiais dos episódios
     const val DEFAULT_EPISODE_1_URL = "https://youtu.be/u0WXCHgZxaY?is=bvomW3X72476KQDG"
     const val DEFAULT_EPISODE_2_URL = "https://youtu.be/1KsKnrc7ojM?is=XjVN827OTKU0Yoj7"
+    const val DEFAULT_EPISODE_3_URL = "https://youtu.be/nfVYJ6jFvRA"
+    const val DEFAULT_EPISODE_4_URL = "https://youtu.be/MjHWLBEyPuA?is=X5ALHVwlqzWGB3NQ"
+    const val DEFAULT_EPISODE_5_URL = "https://youtu.be/okmDuMzlbWM?is=26_OlJt2yXOliUyv"
+    const val DEFAULT_EPISODE_6_URL = "https://youtu.be/-dQl0VDN07c?is=n_R6eieD3FpYvsA0"
+    const val DEFAULT_EPISODE_7_URL = "https://youtu.be/4KE0NczMVwI?is=esCqmShiz-_HTyQZ"
 
     // Perfil Oficial do ADM e Desenvolvedor
     const val OFFICIAL_ADM_NAME = "Harrison Ruffo"
@@ -60,6 +70,76 @@ object DonoDoMorroManager {
         getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_2, DEFAULT_EPISODE_2_URL).apply()
     }
 
+    fun getEpisode3Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_3, DEFAULT_EPISODE_3_URL)
+            ?: DEFAULT_EPISODE_3_URL
+    }
+
+    fun setEpisode3Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_3, clean).apply()
+    }
+
+    fun resetEpisode3Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_3, DEFAULT_EPISODE_3_URL).apply()
+    }
+
+    fun getEpisode4Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_4, DEFAULT_EPISODE_4_URL)
+            ?: DEFAULT_EPISODE_4_URL
+    }
+
+    fun setEpisode4Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_4, clean).apply()
+    }
+
+    fun resetEpisode4Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_4, DEFAULT_EPISODE_4_URL).apply()
+    }
+
+    fun getEpisode5Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_5, DEFAULT_EPISODE_5_URL)
+            ?: DEFAULT_EPISODE_5_URL
+    }
+
+    fun setEpisode5Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_5, clean).apply()
+    }
+
+    fun resetEpisode5Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_5, DEFAULT_EPISODE_5_URL).apply()
+    }
+
+    fun getEpisode6Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_6, DEFAULT_EPISODE_6_URL)
+            ?: DEFAULT_EPISODE_6_URL
+    }
+
+    fun setEpisode6Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_6, clean).apply()
+    }
+
+    fun resetEpisode6Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_6, DEFAULT_EPISODE_6_URL).apply()
+    }
+
+    fun getEpisode7Url(context: Context): String {
+        return getPrefs(context).getString(KEY_CUSTOM_EPISODE_7, DEFAULT_EPISODE_7_URL)
+            ?: DEFAULT_EPISODE_7_URL
+    }
+
+    fun setEpisode7Url(context: Context, url: String) {
+        val clean = url.trim()
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_7, clean).apply()
+    }
+
+    fun resetEpisode7Url(context: Context) {
+        getPrefs(context).edit().putString(KEY_CUSTOM_EPISODE_7, DEFAULT_EPISODE_7_URL).apply()
+    }
+
     fun getFollowersCount(context: Context): Int {
         val extra = getPrefs(context).getInt(KEY_FOLLOWERS_BASE, 0)
         return BASE_FOLLOWERS_COUNT + extra + 1 // +1 for current user auto-follow
@@ -78,6 +158,11 @@ object DonoDoMorroManager {
     fun getEpisodes(context: Context): List<Episode> {
         val ep1Url = getEpisode1Url(context)
         val ep2Url = getEpisode2Url(context)
+        val ep3Url = getEpisode3Url(context)
+        val ep4Url = getEpisode4Url(context)
+        val ep5Url = getEpisode5Url(context)
+        val ep6Url = getEpisode6Url(context)
+        val ep7Url = getEpisode7Url(context)
         return listOf(
             Episode(
                 id = "dono_morro_ep_1",
@@ -104,9 +189,9 @@ object DonoDoMorroManager {
             Episode(
                 id = "dono_morro_ep_3",
                 episodeNumber = 3,
-                title = "Segredos do Asfalto",
-                duration = "1:55",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                title = "A Ira Do Malvadão",
+                duration = "2:05",
+                videoUrl = ep3Url,
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "A alta cúpula descobre as visitas frequentes de Clara. Um ultimato coloca a lealdade da família à prova.",
@@ -115,9 +200,9 @@ object DonoDoMorroManager {
             Episode(
                 id = "dono_morro_ep_4",
                 episodeNumber = 4,
-                title = "O Beijo Proibido na Laje",
+                title = "A Lei Do Morro",
                 duration = "2:30",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                videoUrl = ep4Url,
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "Na laje iluminada pelo luar do Rio, a atração se torna irresistível e quebra todas as regras estabelecidas.",
@@ -126,9 +211,9 @@ object DonoDoMorroManager {
             Episode(
                 id = "dono_morro_ep_5",
                 episodeNumber = 5,
-                title = "Pacto de Sangue e Honra",
+                title = "Vivo Ou Morto",
                 duration = "2:15",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                videoUrl = ep5Url,
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "Uma emboscada na baixada exige uma aliança improvável para salvar a vida de quem ele jurou proteger.",
@@ -137,9 +222,9 @@ object DonoDoMorroManager {
             Episode(
                 id = "dono_morro_ep_6",
                 episodeNumber = 6,
-                title = "Invasão na Madrugada",
+                title = "Vivo Ou Morto",
                 duration = "2:40",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                videoUrl = ep6Url,
                 isUnlocked = true,
                 coinsCost = 0,
                 synopsis = "Tiros ecoam no beco principal. Clara decide enfrentar o perigo para salvar o amor de sua vida.",
@@ -148,12 +233,12 @@ object DonoDoMorroManager {
             Episode(
                 id = "dono_morro_ep_7",
                 episodeNumber = 7,
-                title = "A Fuga pelas Vielas",
+                title = "A Dor Da Perda",
                 duration = "2:20",
-                videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+                videoUrl = ep7Url,
                 isUnlocked = true,
                 coinsCost = 0,
-                synopsis = "Cercados pelos inimigos, uma rota de fuga secreta pelas lajes se torna a única esperança de sobrevivência.",
+                synopsis = "O peso da perda atinge o coração da comunidade. Decisões difíceis precisam ser tomadas para proteger os que ficaram.",
                 likesCount = 2950
             ),
             Episode(

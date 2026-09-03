@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,7 +47,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +70,7 @@ import com.example.R
 import com.example.data.model.Episode
 import com.example.data.repository.NovelaRepository
 import com.example.data.util.DonoDoMorroManager
+import com.example.data.util.YouTubeHelper
 import com.example.ui.theme.CrimsonDark
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.DarkSurface
@@ -88,11 +92,14 @@ fun NovelaScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     var episodes by remember { mutableStateOf(DonoDoMorroManager.getEpisodes(context)) }
     var isFavorite by remember { mutableStateOf(true) }
     var selectedLockedEpisode by remember { mutableStateOf<Episode?>(null) }
 
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -109,15 +116,18 @@ fun NovelaScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = CrimsonPrimary,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(text = "🇧🇷", fontSize = 16.sp)
-                        }
-                    }
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(R.drawable.ic_litoral_novelas_header)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Logo Litoral Novelas",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, GoldAccent.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
@@ -271,13 +281,20 @@ fun NovelaScreen(
 
                     Text(text = "•", color = Color.DarkGray)
 
-                    Text(
-                        text = "10 Episódios",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = DarkSurfaceElevated,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.6f))
+                    ) {
+                        Text(
+                            text = "10 Episódios",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = GoldAccent,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
-                    )
+                    }
 
                     Text(text = "•", color = Color.DarkGray)
 
@@ -286,7 +303,7 @@ fun NovelaScreen(
                         color = Color(0xFFE53935)
                     ) {
                         Text(
-                            text = "16+",
+                            text = "18+",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -360,7 +377,7 @@ fun NovelaScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(230.dp)
+                        .height(240.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .border(
                             2.dp,
@@ -368,20 +385,24 @@ fun NovelaScreen(
                             RoundedCornerShape(16.dp)
                         )
                         .shadow(12.dp, RoundedCornerShape(16.dp))
-                        .clickable { onWatchEpisode(0) }
+                        .clickable {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index = 2)
+                            }
+                        }
                         .testTag("series_main_image_card"),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Black)
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // Image from Google Drive link provided by user (with high-res local asset fallback)
+                        // Official cover from local drawable with crisp resolution
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(DonoDoMorroManager.OFFICIAL_SERIES_IMAGE_URL)
+                                .data(R.drawable.img_dono_morro_featured)
                                 .crossfade(true)
-                                .placeholder(R.drawable.img_dono_morro_cover)
-                                .error(R.drawable.img_dono_morro_cover)
-                                .fallback(R.drawable.img_dono_morro_cover)
+                                .placeholder(R.drawable.img_dono_morro_featured)
+                                .error(R.drawable.img_dono_morro_featured)
+                                .fallback(R.drawable.img_dono_morro_featured)
                                 .build(),
                             contentDescription = "Imagem Principal da Série Brasileira Ação Drama Favela",
                             contentScale = ContentScale.Crop,
@@ -414,7 +435,7 @@ fun NovelaScreen(
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color.Black.copy(alpha = 0.75f),
+                                color = Color.Black.copy(alpha = 0.8f),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent)
                             ) {
                                 Row(
@@ -434,13 +455,14 @@ fun NovelaScreen(
 
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = EmeraldGreen.copy(alpha = 0.9f)
+                                color = Color.Black.copy(alpha = 0.85f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreen)
                             ) {
                                 Text(
-                                    text = "7 EPS LIBERADOS ✅",
+                                    text = "10 EPS • 7 LIBERADOS ✅",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White,
+                                    color = EmeraldGreen,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
@@ -455,25 +477,29 @@ fun NovelaScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Button(
-                                onClick = { onWatchEpisode(0) },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItem(index = 2)
+                                    }
+                                },
                                 colors = ButtonDefaults.buttonColors(containerColor = CrimsonPrimary),
                                 shape = RoundedCornerShape(24.dp),
                                 modifier = Modifier
-                                    .fillMaxWidth(0.85f)
+                                    .fillMaxWidth(0.88f)
                                     .height(44.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = Color.Black,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Assistir Série Agora (Episódio 1)",
+                                    text = "Ver Lista de Episódios (1 a 10) ↓",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = Color.Black
                                 )
                             }
                         }
@@ -561,30 +587,75 @@ fun NovelaScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Episode Number & Play / Lock box
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = if (isAvailable) CrimsonPrimary else Color(0xFF3B1515),
-                        modifier = Modifier.size(46.dp)
+                    // Episode Cover Thumbnail (from official YouTube video if available)
+                    val ytThumb = YouTubeHelper.getThumbnailUrl(ep.videoUrl)
+                    val ytHqThumb = YouTubeHelper.getHqThumbnailUrl(ep.videoUrl)
+
+                    Box(
+                        modifier = Modifier
+                            .width(88.dp)
+                            .height(54.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (isAvailable) {
-                                Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Assistir",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(26.dp)
+                        if (ytThumb != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(ytThumb)
+                                    .crossfade(true)
+                                    .error(R.drawable.img_dono_morro_cover)
+                                    .placeholder(R.drawable.img_dono_morro_cover)
+                                    .fallback(R.drawable.img_dono_morro_cover)
+                                    .build(),
+                                contentDescription = "Capa do ${ep.title}",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.img_dono_morro_cover),
+                                contentDescription = "Capa do ${ep.title}",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        // Subtle dark overlay
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    if (isAvailable) Color.Black.copy(alpha = 0.25f)
+                                    else Color.Black.copy(alpha = 0.65f)
                                 )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = "Cadeado",
-                                    tint = Color(0xFFFF5252),
-                                    modifier = Modifier.size(22.dp)
-                                )
+                        )
+
+                        // Play or Lock icon badge
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isAvailable) CrimsonPrimary.copy(alpha = 0.9f) else Color(0xFF3B1515).copy(alpha = 0.95f),
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (isAvailable) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "Assistir",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Cadeado",
+                                        tint = Color(0xFFFF5252),
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                }
                             }
                         }
                     }

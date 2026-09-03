@@ -25,6 +25,16 @@ object YouTubeHelper {
         return extractVideoId(url) != null
     }
 
+    fun getThumbnailUrl(url: String?): String? {
+        val videoId = extractVideoId(url) ?: return null
+        return "https://img.youtube.com/vi/$videoId/maxresdefault.jpg"
+    }
+
+    fun getHqThumbnailUrl(url: String?): String? {
+        val videoId = extractVideoId(url) ?: return null
+        return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
+    }
+
     fun buildCamouflagedHtml(videoId: String): String {
         return """
         <!DOCTYPE html>

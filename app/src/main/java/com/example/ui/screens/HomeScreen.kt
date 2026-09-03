@@ -27,8 +27,17 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.TheaterComedy
+import androidx.compose.material.icons.filled.SentimentSatisfied
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -70,6 +79,7 @@ import com.example.ui.theme.CrimsonDark
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.DarkSurface
 import com.example.ui.theme.DarkSurfaceElevated
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.GoldAccent
 import kotlinx.coroutines.launch
 
@@ -86,14 +96,20 @@ fun HomeScreen(
     val favorites by repository.favorites.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
+    var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
-    val categories = listOf("Todos", "Em Alta 🔥", "Ação", "Romance", "Suspense")
+    val categories = listOf("Todos", "Drama", "Ação", "Romance", "Suspense", "Comédia")
 
-    val filteredDramas = remember(dramas, selectedCategory) {
-        when (selectedCategory) {
-            "Todos" -> dramas
-            "Em Alta 🔥" -> dramas.filter { it.isTrending }
-            else -> dramas.filter { it.category.contains(selectedCategory, ignoreCase = true) }
+    val filteredDramas = remember(dramas, selectedCategory, searchQuery) {
+        dramas.filter { drama ->
+            val matchesCategory = when (selectedCategory) {
+                "Todos" -> true
+                else -> drama.category.contains(selectedCategory, ignoreCase = true)
+            }
+            val matchesSearch = searchQuery.isBlank() ||
+                drama.title.contains(searchQuery, ignoreCase = true) ||
+                drama.synopsis.contains(searchQuery, ignoreCase = true)
+            matchesCategory && matchesSearch
         }
     }
 
@@ -114,22 +130,18 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(R.drawable.ic_litoral_novelas_header)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Logo Litoral Novelas",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            Brush.linearGradient(listOf(CrimsonPrimary, CrimsonDark))
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Logo",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, GoldAccent.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                )
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
@@ -194,6 +206,39 @@ fun HomeScreen(
             }
         }
 
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .testTag("search_novelas_field"),
+            placeholder = {
+                Text(
+                    text = "Buscar novelas, episódios, gêneros...",
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = GoldAccent
+                )
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = DarkSurfaceElevated,
+                unfocusedContainerColor = DarkSurfaceElevated,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedIndicatorColor = CrimsonPrimary,
+                unfocusedIndicatorColor = Color.Transparent
+            )
+        )
+
         // Main Screen with Pull-to-Refresh Mechanism
         PullToRefreshLayout(
             isRefreshing = isRefreshing,
@@ -243,14 +288,14 @@ fun HomeScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                             colors = CardDefaults.cardColors(containerColor = DarkSurface)
                         ) {
-                            Box(modifier = Modifier.fillMaxWidth().height(230.dp)) {
+                            Box(modifier = Modifier.fillMaxWidth().height(250.dp)) {
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
-                                        .data(featuredDrama.bannerUrl.ifEmpty { featuredDrama.coverUrl })
+                                        .data(R.drawable.img_dono_morro_featured)
                                         .crossfade(true)
-                                        .placeholder(R.drawable.img_dono_morro_cover)
-                                        .error(R.drawable.img_dono_morro_cover)
-                                        .fallback(R.drawable.img_dono_morro_cover)
+                                        .placeholder(R.drawable.img_dono_morro_featured)
+                                        .error(R.drawable.img_dono_morro_featured)
+                                        .fallback(R.drawable.img_dono_morro_featured)
                                         .build(),
                                     contentDescription = featuredDrama.title,
                                     contentScale = ContentScale.Crop,
@@ -265,30 +310,64 @@ fun HomeScreen(
                                             Brush.verticalGradient(
                                                 listOf(
                                                     Color.Transparent,
-                                                    Color.Black.copy(alpha = 0.5f),
+                                                    Color.Black.copy(alpha = 0.4f),
                                                     Color.Black.copy(alpha = 0.95f)
                                                 )
                                             )
                                         )
-                                )
-
-                                // Top badge
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = CrimsonPrimary,
-                                    modifier = Modifier
-                                        .padding(12.dp)
-                                        .align(Alignment.TopStart)
-                                ) {
-                                    Text(
-                                        text = featuredDrama.badge,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 10.sp
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
+
+                                // Top Badges Row: Left Category/Badge + Right 10 Episódios Badge
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp)
+                                        .align(Alignment.TopCenter),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = CrimsonPrimary
+                                    ) {
+                                        Text(
+                                            text = featuredDrama.badge,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = Color.Black,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 10.sp
+                                            ),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+
+                                    // Arrumado com destaque no canto superior direito: 10 EPISÓDIOS
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color.Black.copy(alpha = 0.85f),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.8f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Videocam,
+                                                contentDescription = null,
+                                                tint = GoldAccent,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "10 EPISÓDIOS",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = GoldAccent,
+                                                    fontWeight = FontWeight.Black,
+                                                    fontSize = 10.sp
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
 
                                 // Content at bottom
@@ -304,6 +383,15 @@ fun HomeScreen(
                                             color = Color.White
                                         )
                                     )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "AÇÃO • FAVELA • DRAMA • 18+",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = GoldAccent,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 11.sp
+                                        )
+                                    )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = featuredDrama.synopsis,
@@ -313,7 +401,7 @@ fun HomeScreen(
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
-                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -324,9 +412,9 @@ fun HomeScreen(
                                                 imageVector = Icons.Default.Star,
                                                 contentDescription = "Rating",
                                                 tint = GoldAccent,
-                                                modifier = Modifier.size(16.dp)
+                                                modifier = Modifier.size(15.dp)
                                             )
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Spacer(modifier = Modifier.width(3.dp))
                                             Text(
                                                 text = featuredDrama.rating,
                                                 style = MaterialTheme.typography.labelMedium.copy(
@@ -334,18 +422,17 @@ fun HomeScreen(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             )
-                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "${featuredDrama.episodesCount} Episódios",
-                                                style = MaterialTheme.typography.labelMedium.copy(
-                                                    color = GoldAccent
-                                                )
+                                                text = "•",
+                                                color = Color.Gray
                                             )
-                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "${featuredDrama.views} views",
-                                                style = MaterialTheme.typography.labelMedium.copy(
-                                                    color = Color.LightGray
+                                                text = "7 Liberados",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = EmeraldGreen,
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                             )
                                         }
@@ -358,11 +445,16 @@ fun HomeScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.PlayArrow,
-                                                contentDescription = "Play",
+                                                contentDescription = "Ver Episódios",
+                                                tint = Color.Black,
                                                 modifier = Modifier.size(18.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "Assistir Ep 1", fontWeight = FontWeight.Bold)
+                                            Text(
+                                                text = "Ver Episódios",
+                                                color = Color.Black,
+                                                fontWeight = FontWeight.Bold
+                                            )
                                         }
                                     }
                                 }
@@ -381,13 +473,30 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(categories) { category ->
+                            val icon = when (category) {
+                                "Todos" -> Icons.Default.Videocam
+                                "Drama" -> Icons.Default.TheaterComedy
+                                "Ação" -> Icons.Default.Shield
+                                "Romance" -> Icons.Default.Favorite
+                                "Suspense" -> Icons.Default.Warning
+                                "Comédia" -> Icons.Default.SentimentSatisfied
+                                else -> Icons.Default.LocalFireDepartment
+                            }
                             FilterChip(
                                 selected = selectedCategory == category,
                                 onClick = { selectedCategory = category },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = category,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = if (selectedCategory == category) Color.Black else GoldAccent
+                                    )
+                                },
                                 label = { Text(category) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = CrimsonPrimary,
-                                    selectedLabelColor = Color.White,
+                                    selectedLabelColor = Color.Black,
                                     containerColor = DarkSurfaceElevated,
                                     labelColor = Color.LightGray
                                 )

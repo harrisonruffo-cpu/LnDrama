@@ -53,7 +53,7 @@ import com.example.ui.theme.GoldAccent
 
 enum class ScreenTab(val title: String) {
     HOME("Início"),
-    NOVELA("Novela"),
+    NOVELA("Episódios"),
     WATCH("Assistir"),
     MY_LIST("Minha Lista"),
     PROFILE("Perfil")

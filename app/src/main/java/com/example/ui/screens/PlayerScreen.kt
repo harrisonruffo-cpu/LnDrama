@@ -5,6 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,12 +64,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.R
 import com.example.data.model.Episode
 import com.example.data.repository.NovelaRepository
 import com.example.data.util.AuthManager
@@ -476,37 +482,75 @@ fun PlayerScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(12.dp),
+                                        .padding(8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        // Episode Thumbnail
+                                        val epThumb = YouTubeHelper.getThumbnailUrl(ep.videoUrl)
                                         Box(
                                             modifier = Modifier
-                                                .size(36.dp)
-                                                .background(
-                                                    if (isCurrent) CrimsonPrimary else Color.Black.copy(alpha = 0.5f),
-                                                    CircleShape
-                                                ),
+                                                .width(68.dp)
+                                                .height(42.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color.Black),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            if (ep.isUnlocked) {
-                                                Icon(
-                                                    imageVector = Icons.Default.PlayArrow,
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(20.dp)
+                                            if (epThumb != null) {
+                                                AsyncImage(
+                                                    model = ImageRequest.Builder(LocalContext.current)
+                                                        .data(epThumb)
+                                                        .crossfade(true)
+                                                        .error(R.drawable.img_dono_morro_cover)
+                                                        .placeholder(R.drawable.img_dono_morro_cover)
+                                                        .fallback(R.drawable.img_dono_morro_cover)
+                                                        .build(),
+                                                    contentDescription = "Capa ${ep.title}",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
                                                 )
                                             } else {
-                                                Icon(
-                                                    imageVector = Icons.Default.Lock,
-                                                    contentDescription = "Bloqueado",
-                                                    tint = GoldAccent,
-                                                    modifier = Modifier.size(16.dp)
+                                                androidx.compose.foundation.Image(
+                                                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.img_dono_morro_cover),
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
                                                 )
                                             }
+
+                                            // Badge icon overlay
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .background(
+                                                        if (isCurrent) CrimsonPrimary else Color.Black.copy(alpha = 0.6f),
+                                                        CircleShape
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                if (ep.isUnlocked) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.PlayArrow,
+                                                        contentDescription = null,
+                                                        tint = Color.White,
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                } else {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Lock,
+                                                        contentDescription = "Bloqueado",
+                                                        tint = GoldAccent,
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
+                                                }
+                                            }
                                         }
-                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                        Spacer(modifier = Modifier.width(10.dp))
                                         Column {
                                             Text(
                                                 text = "Episódio ${ep.episodeNumber}: ${ep.title}",
@@ -662,6 +706,11 @@ fun PlayerScreen(
         if (showUrlTestDialog) {
             var inputUrl1 by remember { mutableStateOf(DonoDoMorroManager.getEpisode1Url(context)) }
             var inputUrl2 by remember { mutableStateOf(DonoDoMorroManager.getEpisode2Url(context)) }
+            var inputUrl3 by remember { mutableStateOf(DonoDoMorroManager.getEpisode3Url(context)) }
+            var inputUrl4 by remember { mutableStateOf(DonoDoMorroManager.getEpisode4Url(context)) }
+            var inputUrl5 by remember { mutableStateOf(DonoDoMorroManager.getEpisode5Url(context)) }
+            var inputUrl6 by remember { mutableStateOf(DonoDoMorroManager.getEpisode6Url(context)) }
+            var inputUrl7 by remember { mutableStateOf(DonoDoMorroManager.getEpisode7Url(context)) }
 
             AlertDialog(
                 onDismissRequest = { showUrlTestDialog = false },
@@ -672,7 +721,10 @@ fun PlayerScreen(
                     )
                 },
                 text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         Text(
                             text = "Insira os links de vídeo ou YouTube. A reprodução é otimizada diretamente no player do app.",
                             fontSize = 12.sp,
@@ -720,6 +772,111 @@ fun PlayerScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
+                        // Episódio 3
+                        OutlinedTextField(
+                            value = inputUrl3,
+                            onValueChange = { inputUrl3 = it },
+                            label = { Text("URL do Episódio 3") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId3 = YouTubeHelper.extractVideoId(inputUrl3)
+                        if (detectedId3 != null) {
+                            Text(
+                                text = "✅ Ep 3 Detectado (ID: $detectedId3)",
+                                fontSize = 11.sp,
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Episódio 4
+                        OutlinedTextField(
+                            value = inputUrl4,
+                            onValueChange = { inputUrl4 = it },
+                            label = { Text("URL do Episódio 4") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId4 = YouTubeHelper.extractVideoId(inputUrl4)
+                        if (detectedId4 != null) {
+                            Text(
+                                text = "✅ Ep 4 Detectado (ID: $detectedId4)",
+                                fontSize = 11.sp,
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Episódio 5
+                        OutlinedTextField(
+                            value = inputUrl5,
+                            onValueChange = { inputUrl5 = it },
+                            label = { Text("URL do Episódio 5") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId5 = YouTubeHelper.extractVideoId(inputUrl5)
+                        if (detectedId5 != null) {
+                            Text(
+                                text = "✅ Ep 5 Detectado (ID: $detectedId5)",
+                                fontSize = 11.sp,
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Episódio 6
+                        OutlinedTextField(
+                            value = inputUrl6,
+                            onValueChange = { inputUrl6 = it },
+                            label = { Text("URL do Episódio 6") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId6 = YouTubeHelper.extractVideoId(inputUrl6)
+                        if (detectedId6 != null) {
+                            Text(
+                                text = "✅ Ep 6 Detectado (ID: $detectedId6)",
+                                fontSize = 11.sp,
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Episódio 7
+                        OutlinedTextField(
+                            value = inputUrl7,
+                            onValueChange = { inputUrl7 = it },
+                            label = { Text("URL do Episódio 7") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = Color.Gray
+                            )
+                        )
+                        val detectedId7 = YouTubeHelper.extractVideoId(inputUrl7)
+                        if (detectedId7 != null) {
+                            Text(
+                                text = "✅ Ep 7 Detectado (ID: $detectedId7)",
+                                fontSize = 11.sp,
+                                color = EmeraldGreen,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 },
                 confirmButton = {
@@ -727,6 +884,11 @@ fun PlayerScreen(
                         onClick = {
                             DonoDoMorroManager.setEpisode1Url(context, inputUrl1)
                             DonoDoMorroManager.setEpisode2Url(context, inputUrl2)
+                            DonoDoMorroManager.setEpisode3Url(context, inputUrl3)
+                            DonoDoMorroManager.setEpisode4Url(context, inputUrl4)
+                            DonoDoMorroManager.setEpisode5Url(context, inputUrl5)
+                            DonoDoMorroManager.setEpisode6Url(context, inputUrl6)
+                            DonoDoMorroManager.setEpisode7Url(context, inputUrl7)
                             episodes = DonoDoMorroManager.getEpisodes(context)
                             showUrlTestDialog = false
                             Toast.makeText(context, "Links dos episódios salvos com sucesso!", Toast.LENGTH_SHORT).show()
@@ -741,6 +903,11 @@ fun PlayerScreen(
                         onClick = {
                             DonoDoMorroManager.resetEpisode1Url(context)
                             DonoDoMorroManager.resetEpisode2Url(context)
+                            DonoDoMorroManager.resetEpisode3Url(context)
+                            DonoDoMorroManager.resetEpisode4Url(context)
+                            DonoDoMorroManager.resetEpisode5Url(context)
+                            DonoDoMorroManager.resetEpisode6Url(context)
+                            DonoDoMorroManager.resetEpisode7Url(context)
                             episodes = DonoDoMorroManager.getEpisodes(context)
                             showUrlTestDialog = false
                             Toast.makeText(context, "Links restaurados para o padrão oficial", Toast.LENGTH_SHORT).show()
