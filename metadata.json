@@ -1,0 +1,6 @@
+{
+  "name": "Litoral Novelas",
+  "description": "Aplicativo oficial Litoral Novelas: mini-novelas exclusivas, O Dono do Morro, episódios em formato vertical, comunidade oficial e perfil verificado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
