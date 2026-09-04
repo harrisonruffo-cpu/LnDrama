@@ -135,12 +135,16 @@ fun HomeScreen(
                         .data(R.drawable.ic_litoral_novelas_header)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Logo Litoral Novelas",
+                    contentDescription = "Logo Oficial Litoral Novelas",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.dp, GoldAccent.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .border(
+                            1.5.dp,
+                            Brush.linearGradient(listOf(Color(0xFF00E5FF), GoldAccent)),
+                            CircleShape
+                        )
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
@@ -153,9 +157,10 @@ fun HomeScreen(
                         )
                     )
                     Text(
-                        text = "Mini-Novelas Exclusivas",
+                        text = "Histórias que Emocionam",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = GoldAccent,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 10.sp
                         )
                     )

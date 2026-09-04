@@ -121,17 +121,21 @@ fun NovelaScreen(
                             .data(R.drawable.ic_litoral_novelas_header)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Logo Litoral Novelas",
+                        contentDescription = "Logo Oficial Litoral Novelas",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(1.dp, GoldAccent.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .border(
+                                1.5.dp,
+                                Brush.linearGradient(listOf(Color(0xFF00E5FF), GoldAccent)),
+                                CircleShape
+                            )
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "NOVELA BRASILEIRA",
+                            text = "LITORAL NOVELAS",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = 1.sp,
@@ -139,9 +143,10 @@ fun NovelaScreen(
                             )
                         )
                         Text(
-                            text = "Produção Nacional Exclusiva",
+                            text = "Histórias que Emocionam",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = GoldAccent,
+                                fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp
                             )
                         )
