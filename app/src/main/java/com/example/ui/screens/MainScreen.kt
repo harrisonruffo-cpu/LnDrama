@@ -234,6 +234,9 @@ fun MainScreen(
                         onWatchEpisode = { epIndex ->
                             selectedEpisodeIndex = epIndex
                             selectedTab = ScreenTab.WATCH
+                        },
+                        onLogout = {
+                            isUserLoggedIn = false
                         }
                     )
                 }

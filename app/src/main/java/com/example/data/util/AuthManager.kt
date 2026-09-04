@@ -99,14 +99,25 @@ object AuthManager {
             e.printStackTrace()
         }
 
-        // Se a lista de contas do sistema retornou vazia (ambiente restrito/emulador sem Play Services),
-        // fornecemos as contas sugeridas padrão para permitir a seleção imediata pelo usuário
-        if (result.isEmpty()) {
-            result.add("agressivoboyoficial@gmail.com")
-            result.add("contato.litoralnovelas@gmail.com")
-            result.add("usuario.android@gmail.com")
-        }
+        // Se a lista de contas do sistema retornou vazia, mantemos vazia para que o usuário
+        // utilize o seletor oficial do sistema operacional ou insira sua própria conta Google real
         return result
+    }
+
+    /**
+     * Cria a Intent oficial do sistema Android para exibir o seletor nativo com
+     * TODAS as contas Google cadastradas no dispositivo (AccountManager.newChooseAccountIntent)
+     */
+    fun createGoogleAccountPickerIntent(): android.content.Intent {
+        return AccountManager.newChooseAccountIntent(
+            null, // selectedAccount
+            null, // allowableAccounts
+            arrayOf("com.google"), // allowableAccountTypes (apenas contas Google oficiais)
+            null, // descriptionOverrideText
+            null, // addAccountAuthTokenType
+            null, // addAccountRequiredFeatures
+            null  // addAccountOptions
+        )
     }
 
     private fun saveAccountToCloudList(

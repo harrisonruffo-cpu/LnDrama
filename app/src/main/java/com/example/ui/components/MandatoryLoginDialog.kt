@@ -1,5 +1,10 @@
 package com.example.ui.components
 
+import android.accounts.AccountManager
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -92,6 +97,34 @@ fun MandatoryLoginDialog(
     var availableGoogleAccounts by remember { mutableStateOf<List<String>>(emptyList()) }
     var showGoogleAccountPicker by remember { mutableStateOf(false) }
     var selectedGoogleAccount by remember { mutableStateOf("") }
+    var manualGoogleEmail by remember { mutableStateOf("") }
+    var showManualGoogleInput by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Launcher para Seletor Oficial de Contas Google do Android
+    val googleAccountPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+            if (!accountName.isNullOrBlank()) {
+                selectedGoogleAccount = accountName
+                isLoading = true
+                val userName = accountName.substringBefore("@").replace(".", " ").capitalizeWords()
+                AuthManager.saveLogin(
+                    context = context,
+                    userId = "g_${accountName.hashCode()}",
+                    name = userName,
+                    email = accountName,
+                    photoUrl = "",
+                    provider = "Google"
+                )
+                Toast.makeText(context, "Conectado como $accountName", Toast.LENGTH_SHORT).show()
+                onLoginSuccess(userName, accountName, "Google")
+            }
+        }
+    }
 
     // Campos de E-mail / Senha
     var isRegisterMode by remember { mutableStateOf(false) }
@@ -99,14 +132,12 @@ fun MandatoryLoginDialog(
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
 
     // Carrega contas Google do Android
     LaunchedEffect(Unit) {
         val accounts = AuthManager.getDeviceGoogleAccounts(context)
         availableGoogleAccounts = accounts
-        if (accounts.isNotEmpty()) {
+        if (accounts.size == 1) {
             selectedGoogleAccount = accounts.first()
         }
     }
@@ -228,118 +259,210 @@ fun MandatoryLoginDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Contas Google do seu dispositivo Android:",
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            text = "Autenticação Oficial do Google",
+                            style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color.White,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "Conecte-se com sua conta Google real deste aparelho:",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.LightGray,
+                                fontSize = 11.sp
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Caixa com a conta Google selecionada
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showGoogleAccountPicker = true }
-                                .testTag("google_account_card"),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
-                            border = BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.6f))
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = Color.White,
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = "G",
-                                                fontWeight = FontWeight.Black,
-                                                color = Color(0xFF4285F4),
-                                                fontSize = 20.sp
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Column {
-                                        Text(
-                                            text = if (selectedGoogleAccount.isNotBlank()) selectedGoogleAccount else "Nenhuma conta detectada",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White
-                                            ),
-                                            maxLines = 1
-                                        )
-                                        Text(
-                                            text = "Toque para escolher outra conta",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                color = Color(0xFF80D8FF),
-                                                fontSize = 10.sp
-                                            )
-                                        )
-                                    }
-                                }
-
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Selecionada",
-                                    tint = EmeraldGreen,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
+                        // BOTÃO PRINCIPAL: Seletor Oficial do Sistema Android (AccountManager)
                         Button(
                             onClick = {
-                                if (selectedGoogleAccount.isNotBlank()) {
-                                    isLoading = true
-                                    val userName = selectedGoogleAccount.substringBefore("@").replace(".", " ").capitalizeWords()
-                                    AuthManager.saveLogin(
-                                        context = context,
-                                        userId = "g_${System.currentTimeMillis()}",
-                                        name = userName,
-                                        email = selectedGoogleAccount,
-                                        photoUrl = "",
-                                        provider = "Google"
-                                    )
-                                    onLoginSuccess(userName, selectedGoogleAccount, "Google")
-                                } else {
-                                    errorMessage = "Selecione uma conta Google válida."
+                                try {
+                                    val intent = AuthManager.createGoogleAccountPickerIntent()
+                                    googleAccountPickerLauncher.launch(intent)
+                                } catch (e: Exception) {
+                                    if (availableGoogleAccounts.isNotEmpty()) {
+                                        showGoogleAccountPicker = true
+                                    } else {
+                                        showManualGoogleInput = true
+                                    }
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(48.dp)
-                                .testTag("btn_confirm_google_login"),
+                                .height(50.dp)
+                                .testTag("btn_official_google_picker"),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                         ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                            } else {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Entrar com Conta Google",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        fontSize = 14.sp
-                                    )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = Color(0xFF4285F4),
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text = "G",
+                                            fontWeight = FontWeight.Black,
+                                            color = Color.White,
+                                            fontSize = 14.sp
+                                        )
+                                    }
                                 }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Escolher Conta Google do Aparelho",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1F2937),
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+
+                        // Lista de Contas Google detectadas diretamente no aparelho
+                        if (availableGoogleAccounts.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Text(
+                                text = "Contas detectadas neste celular:",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = GoldAccent,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 11.sp
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            availableGoogleAccounts.forEach { acc ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .clickable {
+                                            selectedGoogleAccount = acc
+                                            isLoading = true
+                                            val userName = acc.substringBefore("@").replace(".", " ").capitalizeWords()
+                                            AuthManager.saveLogin(
+                                                context = context,
+                                                userId = "g_${acc.hashCode()}",
+                                                name = userName,
+                                                email = acc,
+                                                photoUrl = "",
+                                                provider = "Google"
+                                            )
+                                            Toast.makeText(context, "Conectado como $acc", Toast.LENGTH_SHORT).show()
+                                            onLoginSuccess(userName, acc, "Google")
+                                        },
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = CardDefaults.cardColors(containerColor = DarkSurfaceElevated),
+                                    border = BorderStroke(1.dp, if (selectedGoogleAccount == acc) GoldAccent else Color(0xFF334155))
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Surface(
+                                                shape = CircleShape,
+                                                color = Color(0xFF4285F4),
+                                                modifier = Modifier.size(28.dp)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(
+                                                        text = "G",
+                                                        fontWeight = FontWeight.Black,
+                                                        color = Color.White,
+                                                        fontSize = 14.sp
+                                                    )
+                                                }
+                                            }
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = acc,
+                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.Medium
+                                                ),
+                                                maxLines = 1
+                                            )
+                                        }
+
+                                        Text(
+                                            text = "Entrar ▶",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = EmeraldGreen
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Opção de inserir e-mail Google manualmente caso o dispositivo seja restrito
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TextButton(
+                            onClick = { showManualGoogleInput = !showManualGoogleInput }
+                        ) {
+                            Text(
+                                text = if (showManualGoogleInput) "Ocultar entrada manual" else "Digitar e-mail Google manualmente",
+                                color = Color(0xFF80D8FF),
+                                fontSize = 11.sp
+                            )
+                        }
+
+                        if (showManualGoogleInput) {
+                            OutlinedTextField(
+                                    value = manualGoogleEmail,
+                                    onValueChange = { manualGoogleEmail = it },
+                                    label = { Text("Seu e-mail @gmail.com", color = Color.Gray, fontSize = 12.sp) },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        focusedBorderColor = Color(0xFF4285F4),
+                                        unfocusedBorderColor = Color.Gray
+                                    )
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = {
+                                    if (manualGoogleEmail.contains("@") && manualGoogleEmail.contains(".")) {
+                                        isLoading = true
+                                        val cleanEmail = manualGoogleEmail.trim()
+                                        val userName = cleanEmail.substringBefore("@").replace(".", " ").capitalizeWords()
+                                        AuthManager.saveLogin(
+                                            context = context,
+                                            userId = "g_${cleanEmail.hashCode()}",
+                                            name = userName,
+                                            email = cleanEmail,
+                                            photoUrl = "",
+                                            provider = "Google"
+                                        )
+                                        Toast.makeText(context, "Conectado como $cleanEmail", Toast.LENGTH_SHORT).show()
+                                        onLoginSuccess(userName, cleanEmail, "Google")
+                                    } else {
+                                        errorMessage = "Digite um e-mail Google válido (ex: seu.nome@gmail.com)"
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().height(44.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
+                            ) {
+                                Text("Entrar com este E-mail Google", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 12.sp)
                             }
                         }
                     }
@@ -583,6 +706,28 @@ fun MandatoryLoginDialog(
             },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            showGoogleAccountPicker = false
+                            try {
+                                val intent = AuthManager.createGoogleAccountPickerIntent()
+                                googleAccountPickerLauncher.launch(intent)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            text = "Abrir Seletor Oficial do Android",
+                            color = Color(0xFF1F2937),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+
                     Text(
                         text = "Contas detectadas no seu dispositivo Android:",
                         fontSize = 12.sp,

@@ -1,11 +1,14 @@
 package com.example.ui.screens
 
+import android.accounts.AccountManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -86,11 +89,38 @@ fun ProfileScreen(
     onConfigureUrl: () -> Unit,
     onOpenNovela: () -> Unit = {},
     onWatchEpisode: (Int) -> Unit = {},
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var viewOfficialAdmin by remember { mutableStateOf(true) }
+    var viewOfficialAdmin by remember { mutableStateOf(false) }
     val followersCount = remember { DonoDoMorroManager.getFollowersCount(context) }
+    var currentUser by remember { mutableStateOf(AuthManager.getCurrentUser(context)) }
+    var authProvider by remember { mutableStateOf(AuthManager.getAuthProvider(context)) }
+
+    val googlePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK && result.data != null) {
+            val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+            if (!accountName.isNullOrBlank()) {
+                val userName = accountName.substringBefore("@").replace(".", " ").split(" ")
+                    .filter { it.isNotBlank() }
+                    .joinToString(" ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
+                AuthManager.saveLogin(
+                    context = context,
+                    userId = "g_${accountName.hashCode()}",
+                    name = userName,
+                    email = accountName,
+                    photoUrl = "",
+                    provider = "Google"
+                )
+                currentUser = AuthManager.getCurrentUser(context)
+                authProvider = "Google"
+                Toast.makeText(context, "Conectado como $accountName", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     LazyColumn(
         modifier = modifier
@@ -385,9 +415,6 @@ fun ProfileScreen(
                 }
             } else {
                 // Current App User Profile
-                val loggedUser = remember { AuthManager.getCurrentUser(context) }
-                val authProvider = remember { AuthManager.getAuthProvider(context) }
-
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -407,7 +434,7 @@ fun ProfileScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = loggedUser.name.firstOrNull()?.toString()?.uppercase() ?: "U",
+                                text = currentUser.name.firstOrNull()?.toString()?.uppercase() ?: "U",
                                 fontSize = 34.sp,
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -417,7 +444,7 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = loggedUser.name,
+                            text = currentUser.name,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -425,7 +452,7 @@ fun ProfileScreen(
                         )
 
                         Text(
-                            text = loggedUser.email,
+                            text = currentUser.email,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -511,6 +538,52 @@ fun ProfileScreen(
                                 shape = RoundedCornerShape(20.dp)
                             ) {
                                 Text("Recarregar", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Botões de Trocar Conta Google Oficial ou Desconectar
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    try {
+                                        val intent = AuthManager.createGoogleAccountPickerIntent()
+                                        googlePickerLauncher.launch(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Seletor Google não disponível", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.weight(1f).height(44.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Surface(shape = CircleShape, color = Color(0xFF4285F4), modifier = Modifier.size(18.dp)) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text("G", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Trocar Conta Google", color = Color(0xFF1F2937), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                }
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    AuthManager.logout(context)
+                                    Toast.makeText(context, "Sessão encerrada", Toast.LENGTH_SHORT).show()
+                                    onLogout()
+                                },
+                                modifier = Modifier.weight(0.7f).height(44.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = CrimsonPrimary),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, CrimsonPrimary),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Sair", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                         }
                     }
